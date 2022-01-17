@@ -71,7 +71,7 @@ function SignInScreen({ navigation }) {
                             criteria: `Mobile_No=="${number}"`
                         },
                     }
-
+                    console.log("Key", key);
                     const response = await axios.get('https://creator.zoho.in/api/v2/ashish_motherpod/sainikpod-2nd-generation-beta/report/S08_Passenger_Report', config)
                     if (response.status == 200) {
                         if (response.data.code == 3000) {
@@ -104,7 +104,7 @@ function SignInScreen({ navigation }) {
                 return navigation.navigate("Member")
             } else {
                 setLoading(false);
-                return Alert.alert("Login", "Something went wrong!! please try again later")
+                return Alert.alert("Sainikpod", "Something went wrong!! please try again later")
             }
         }
         // navigation.navigate('Member')
@@ -138,9 +138,10 @@ function SignInScreen({ navigation }) {
                             source={require('../assets/img/logo.png')}
                         />
                         <Text style={{
-                            fontSize: 20,
+                            fontSize: 25,
                             paddingVertical: 10,
-                            color: colors.dark
+                            color: colors.dark,
+                            fontFamily: 'URWGeometric-Regular'
                         }}>
                             Let's Move Together
                         </Text>

@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
-import { ScrollView, Linking, View, useColorScheme, ActivityIndicator, TouchableOpacity, StatusBar, SafeAreaView, StyleSheet, Text } from "react-native";
+import { ScrollView, Linking, View, useColorScheme, ActivityIndicator, TouchableOpacity, StatusBar, SafeAreaView, StyleSheet, Text, Alert } from "react-native";
 import { Card, Button, Image } from "react-native-elements";
 // import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "react-native/Libraries/NewAppScreen";
@@ -17,11 +17,14 @@ import { io } from "socket.io-client";
 import metrics from "../../theme/metrics";
 import { T } from "../../constants/T";
 import { DropLocation } from "./DropLocation";
+import { BookingContext } from "../../context/booking";
 
 
 const SitStack = createNativeStackNavigator();
 
 const TakeStand = ({ navigation, route }) => {
+    const [state, dispatch] = React.useContext(BookingContext);
+
     const [loading, setLoading] = React.useState(false);
     const [OTP, setOtp] = React.useState(null);
 
@@ -29,7 +32,8 @@ const TakeStand = ({ navigation, route }) => {
     const [runTimer, setRunTimer] = React.useState(false);
     const [user, setUser] = React.useState(null);
 
-    React.useEffect(() => {
+    // Take user to card subscription
+    /* React.useEffect(() => {
         const unsubscribe = navigation.addListener('focus', async () => {
             const user = await getObject("user");
             const key = await getData('access_key');
@@ -47,7 +51,7 @@ const TakeStand = ({ navigation, route }) => {
 
         // Return the function to unsubscribe from the event so it gets removed on unmount
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation]); */
 
     React.useEffect(() => {
         const getData = async () => {
@@ -103,6 +107,30 @@ const TakeStand = ({ navigation, route }) => {
         }
     }, [countDown, runTimer]); */
 
+    /* const syncBookings = (ID, key) => {
+        if (ID) {
+            let headers = { 'Authorization': 'Zoho-oauthtoken ' + key }
+            var timesRun = 0;
+            var interval = setInterval(async function () {
+                const res = await axios.get(`https://creator.zoho.in/api/v2/ashish_motherpod/sainikpod-2nd-generation-beta/report/S05_Booking_Report/${ID}`, { headers: headers })
+                if (res.status == 200) {
+                    if (res.data.code == 3000) {
+                        if (res.data.data.Booking_Status != "Scheduled") {
+                            clearInterval(interval);
+                            dispatch({ type: 'ADD_CURRENT_BOOKING', payload: res.data.data });
+                            console.log("Completed");
+                            navigation.navigate("DropLocation")
+                        } console.log(res.data.data);
+                    }
+                }
+                timesRun += 1;
+                console.log(timesRun);
+                //do whatever here..
+            }, 10000);
+
+        }
+    } */
+
     const sendOtp = async () => {
         setLoading(true);
         const key = await getData('access_key');
@@ -118,7 +146,7 @@ const TakeStand = ({ navigation, route }) => {
                     "Booking_Status": "Scheduled"
                 }
             }
-            console.log(key);
+            dispatch({ type: 'ADD_KEY', payload: key });
             const response = await axios.post('https://creator.zoho.in/api/v2/ashish_motherpod/sainikpod-2nd-generation-beta/form/S05_Booking', data, { headers: headers })
             if (response.status == 200) {
                 console.log(response.data);
@@ -130,17 +158,53 @@ const TakeStand = ({ navigation, route }) => {
                         if (res.data.code == 3000) {
                             console.log(res.data.data);
                             const OTPRecordData = await res.data.data;
+                            dispatch({ type: 'ADD_CURRENT_BOOKING', payload: OTPRecordData });
+                            // syncBookings(OTPRecord, key);
                             const { Booking_Start_OTP } = await OTPRecordData;
                             setOtp(Booking_Start_OTP);
                             setRunTimer(true);
                             setLoading(false);
                         }
                     }
+                } else if (response.data.code == 4000) {
+                    setLoading(false);
+                    Alert.alert("Booking Failed", response.data.message);
                 }
             }
         }
         /* setOtp(3245);
         setRunTimer(true); */
+    }
+
+    const TripStarted = async () => {
+        await navigation.navigate("DropLocation");
+        await setOtp(null);
+    }
+
+    const createNewBooking = async () => {
+        try {
+            const key = await getData('access_key');
+            if (state.currentBooking?.ID && key) {
+                let headers = { 'Authorization': 'Zoho-oauthtoken ' + key }
+                const res = await axios.get(`https://creator.zoho.in/api/v2/ashish_motherpod/sainikpod-2nd-generation-beta/report/S05_Booking_Report/${state.currentBooking.ID}`, { headers: headers })
+                if (res.status == 200) {
+                    if (res.data.code == 3000) {
+                        console.log(res.data.data);
+                        const latestBooking = await res.data.data;
+                        if (latestBooking.Booking_Status == "Completed") {
+                            Alert.alert("Ride Completed", "You have completed your ride. Created a new ride for you.");
+                            dispatch({ type: 'ADD_CURRENT_BOOKING', payload: latestBooking });
+                            sendOtp();
+                        } else {
+                            Alert.alert("Sainikpod", "Ride not completed yet");
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            Alert.alert("Something went wrong", "Please try again later");
+        }
+
     }
 
     // const togglerTimer = () => setRunTimer((t) => !t);
@@ -163,6 +227,7 @@ const TakeStand = ({ navigation, route }) => {
                         <T description="Sainikpod" size={style.h2} color={colors.secondary} />
                         <Text>&nbsp; &nbsp;</Text>
                         <T description="Sit&Go" size={style.h2} color={colors.white} />
+
                         {/* <Text h2 style={{ color: colors.white, fontFamily: 'URWGeometric-Regular', fontSize: style.h2 }}></Text> */}
                     </View>
                     <View style={{
@@ -171,15 +236,31 @@ const TakeStand = ({ navigation, route }) => {
                         justifyContent: 'center',
                     }}>
                         <View style={{ paddingVertical: 30, paddingHorizontal: 40 }}>
-                            <T description="Take a sainik driven electric car from any of our podstands" textAlign="center" size={style.h3} />
+                            <T description="Take a sainik driven electric car from any of our podstands" textAlign="center" size={style.h3} color={colors.white} />
                         </View>
                         {/* {user ? <QRCode value={user?.ID} size={metrics.screenHeight - 700} /> : <ActivityIndicator size="large" color={colors.white} />} */}
 
                     </View>
+                    {/* {OTP && (
+                        <Button
+                            title="Trip Started ?"
+                            containerStyle={{
+                                width: '50%',
+                                textAlign: 'center'
+                            }}
+                            buttonStyle={{
+                                backgroundColor: colors.secondary,
+                                padding: 10
+                            }}
+                            onPress={TripStarted}
+                        />
+                    )} */}
+
                     <View style={{ padding: 25 }}>
                         <T textAlign="center" color={colors.white} size={style.h3} description="₹15 per km" />
                         <T textAlign="center" color={colors.secondary} size={style.h3} description="Members only" />
                     </View>
+
                     {/* <Button
                         title="Take a stand"
                         containerStyle={{
@@ -207,7 +288,7 @@ const TakeStand = ({ navigation, route }) => {
                             padding: 25,
                             width: '100%',
                             textAlign: 'center'
-                        }}>
+                        }} onPress={createNewBooking}>
                         <Text h4 style={{
                             color: colors.primary,
                             textAlign: 'center',
@@ -215,8 +296,15 @@ const TakeStand = ({ navigation, route }) => {
                             fontSize: 20,
                         }}>{loading ? <ActivityIndicator size="large" color={colors.white} /> : <>
                             <Text>OTP: {OTP}</Text>
-
                         </>}</Text>
+
+                        {!loading && <Text style={{
+                            color: colors.primary,
+                            textAlign: 'center',
+                            fontWeight: 'bold',
+                            fontSize: 20,
+                            marginTop: 10
+                        }}>GENERATE NEW OTP</Text>}
                         {/* <Text h4 style={{
                             color: colors.primary,
                             textAlign: 'center',
@@ -242,7 +330,7 @@ const TakeStand = ({ navigation, route }) => {
                     }}>{loading ? <ActivityIndicator size="large" color={colors.primary} /> : 'GENERATE OTP'}</Text>
                 </TouchableOpacity>
                 )}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     onPress={() => navigation.push('DropLocation')}
                     style={{
                         backgroundColor: colors.primary,
@@ -253,19 +341,35 @@ const TakeStand = ({ navigation, route }) => {
                     }}>
                     <T textAlign="center" color={colors.white} size={style.h3} description="Find a podstand near you" />
 
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </SafeAreaView>
     )
 }
-export const Sit = () => {
+export const Sit = ({ navigation, route }) => {
+
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            tabBarStyle: {
+                display: 'none',
+            }
+        });
+    }, [navigation, route]);
 
     return (
         <SitStack.Navigator>
-            <SitStack.Screen name="DropLocation" component={DropLocation} />
-            <SitStack.Screen name="TakeStand" component={TakeStand} />
-            <SitStack.Screen name="NearBy" component={NearBy} />
-            <SitStack.Screen name="PodStand" component={PodStand} />
+            <SitStack.Screen name="TakeStand" component={TakeStand} options={{
+                headerShown: false,
+            }} />
+            <SitStack.Screen name="DropLocation" component={DropLocation} options={{
+                headerShown: false,
+            }} />
+            <SitStack.Screen name="NearBy" component={NearBy} options={{
+                headerShown: false,
+            }} />
+            <SitStack.Screen name="PodStand" component={PodStand} options={{
+                headerShown: false,
+            }} />
         </SitStack.Navigator>
     )
 }

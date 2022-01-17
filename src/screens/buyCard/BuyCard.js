@@ -7,6 +7,10 @@
  * https://github.com/react-native-svg/react-native-svg/issues/834
  * https://stackoverflow.com/questions/45822318/how-do-i-request-permission-for-android-device-location-in-react-native-at-run-t?rq=1
  * https://www.npmjs.com/package/react-native-geolocation-service
+ * https://pretagteam.com/question/angular-get-latitude-and-longitude-from-place-id-in-google-maps-component
+ * https://dev.to/mosoakinyemi/how-to-create-a-google-autocomplete-form-in-react-native-4ffb
+ * https://www.sitepoint.com/replace-redux-react-hooks-context-api/
+ * https://aboutreact.com/react-native-asyncstorage/
  *
  * @format
  * @flow strict-local

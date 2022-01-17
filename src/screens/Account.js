@@ -23,7 +23,7 @@ export const Account = ({ navigation, route }) => {
         }
     ]
 
-    React.useEffect(() => {
+    /* React.useEffect(() => {
         const unsubscribe = navigation.addListener('focus', async () => {
             const user = await getObject("user");
             const key = await getData('access_key');
@@ -41,7 +41,7 @@ export const Account = ({ navigation, route }) => {
 
         // Return the function to unsubscribe from the event so it gets removed on unmount
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation]); */
 
     React.useLayoutEffect(() => {
         navigation.setOptions({

@@ -20,14 +20,16 @@ function BecomeMember({ navigation, route }) {
             <Text style={{
                 fontSize: 20,
                 paddingVertical: 10,
-                color: colors.dark
+                color: colors.dark,
+                fontFamily: 'URWGeometric-Regular'
             }}>
                 Let's Move Together
             </Text>
 
-            <Text h3 style={{
+            <Text style={{
                 marginVertical: 30,
-                color: colors.dark
+                color: colors.dark,
+                fontFamily: 'URWGeometric-Regular'
             }}>Your currently not a sainikpod member</Text>
 
             <Button

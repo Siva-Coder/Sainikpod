@@ -12,7 +12,7 @@
 import * as React from 'react';
 // import axios from './src/axios-base';
 import { ACCESS_KEY } from '@env';
-import { Alert, AsyncStorage, Dimensions, PermissionsAndroid } from 'react-native';
+import { Alert, AsyncStorage, Dimensions, PermissionsAndroid, Text } from 'react-native';
 
 import { Node } from 'react';
 import {
@@ -47,7 +47,7 @@ import Logo from './src/assets/img/logo.png';
 import metrics from './src/theme/metrics';
 import useWindowDimensions from 'react-native/Libraries/Utilities/useWindowDimensions';
 
-import { Button, Input, Text } from 'react-native-elements';
+import { Button, Input } from 'react-native-elements';
 import axios from 'axios';
 import { io } from "socket.io-client";
 
@@ -61,6 +61,10 @@ import { Account } from './src/screens/Account';
 import { Profile } from './src/screens/Profile';
 import SplashScreen from './src/screens/splash/SplashScreen';
 import AskLocation from './src/screens/AskLocation';
+import { Welcome } from './src/screens/Welcome';
+import MemberCode from './src/screens/MemberCode';
+import { T } from './src/constants/T';
+import style from './src/theme/styles';
 
 const Stack = createNativeStackNavigator();
 
@@ -123,6 +127,7 @@ function Terms({ navigation }) {
       <Text style={{
         fontSize: 15,
         paddingVertical: 10,
+        fontFamily: 'URWGeometric-Regular'
       }}>
         Let's Move Together
       </Text>
@@ -133,24 +138,30 @@ function Terms({ navigation }) {
         width: '100%',
         padding: 25
       }}>
-        <Text h4 style={{
+        <Text style={{
           textAlign: 'center',
-          color: '#fff'
+          color: '#fff',
+          fontFamily: 'URWGeometric-Regular',
+          fontSize: 30
         }}>Terms & Conditions</Text>
       </View>
 
       <ScrollView>
         <Text style={{
           padding: 20,
-          fontSize: 17,
-          lineHeight: 23
+          fontSize: 20,
+          lineHeight: 23,
+          fontFamily: 'URWGeometric-Regular',
+          color: '#000'
         }}>
           It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).
         </Text>
         <Text style={{
           padding: 20,
-          fontSize: 17,
-          lineHeight: 23
+          fontSize: 20,
+          lineHeight: 23,
+          fontFamily: 'URWGeometric-Regular',
+          color: '#000'
         }}>
           Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.        </Text>
       </ScrollView>
@@ -166,7 +177,9 @@ function Terms({ navigation }) {
         onPress={() => navigation.navigate('Signup')}>
         <Text h4 style={{
           color: '#fff',
-          textAlign: 'center'
+          textAlign: 'center',
+          fontFamily: 'URWGeometric-Regular',
+          fontSize: 30
         }}>Accept</Text>
       </TouchableOpacity>
       {/* <Button title="Sign in" onPress={() => signIn({ username, password })} /> */}
@@ -233,7 +246,8 @@ function Signup({ route, navigation }) {
                 console.log(user);
                 setLoading(false);
                 await storeObject("user", user);
-                return signIn({ user, key });
+                return navigation.navigate("Welcome", { user: user, key: key });
+                // return signIn({ user, key });
               } else {
                 Alert.alert('Error', 'Something went wrong!', [{ text: 'OK' }])
               }
@@ -286,10 +300,11 @@ function Signup({ route, navigation }) {
               width: '100%',
               padding: 25
             }}>
-              <Text h4 style={{
+              <T description="Add member details" size={style.h3} textAlign="center" color={colors.white} />
+              {/* <Text h4 style={{
                 textAlign: 'center',
                 color: '#fff'
-              }}>Add member details</Text>
+              }}>Add member details</Text> */}
             </View>
             <View style={{
               flex: 1,
@@ -302,10 +317,8 @@ function Signup({ route, navigation }) {
               <View style={{
                 width: '100%',
               }}>
-                <Text h4 style={{
-                  textAlign: 'left',
-                  paddingStart: 10
-                }}>Your Details</Text>
+                <T description="Your Details" size={style.h4} weight={true} textAlign="left" color={colors.dark} paddingStart={10} />
+
                 <Input
                   value={name}
                   placeholder='Name'
@@ -354,10 +367,8 @@ function Signup({ route, navigation }) {
                 width: '100%',
                 marginTop: 20,
               }}>
-                <Text h4 style={{
-                  textAlign: 'left',
-                  paddingStart: 10
-                }}>Emergency Contacts</Text>
+                <T description="Emergency Contacts" size={style.h4} weight={true} textAlign="left" color={colors.dark} paddingStart={10} />
+
                 <Input
                   value={emergencyName}
                   placeholder='Name'
@@ -400,13 +411,16 @@ function Signup({ route, navigation }) {
           borderRadius: 0,
           padding: 25,
           width: '100%',
-          textAlign: 'center'
+          textAlign: 'center',
+          fontFamily: 'URWGeometric-Regular'
         }}
         onPress={handleSignUp}>
         {
-          loading ? <ActivityIndicator size="small" color="#fff" /> : <Text h4 style={{
+          loading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={{
             color: '#fff',
-            textAlign: 'center'
+            textAlign: 'center',
+            fontFamily: 'URWGeometric-Regular',
+            fontSize: 30
           }}>Add Card</Text>
         }
 
@@ -633,6 +647,10 @@ export default function App({ navigation }) {
                   options={{
                     headerShown: false
                   }} />
+                <Stack.Screen name="Welcome" component={Welcome} />
+                <Stack.Screen name="MemberCode" component={MemberCode} options={{
+                  headerShown: false
+                }} />
               </>
             ) : (
               // User is signed in

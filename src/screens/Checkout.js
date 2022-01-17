@@ -67,7 +67,8 @@ function Checkout({ navigation, route }) {
                     setLoading(false);
                     if (response.data.code == 3000) {
                         await storeObject('user', { ...user, Membership_Type: 'SainikPod Member' });
-                        Alert.alert('Success', 'Payment Successful', [{ text: 'OK', onPress: () => navigation.dispatch(StackActions.popToTop()) }])
+                        // Alert.alert('Success', 'Payment Successful', [{ text: 'OK', onPress: () => navigation.dispatch(StackActions.popToTop()) }])
+                        Alert.alert('Success', 'Payment Successful', [{ text: 'OK', onPress: () => navigation.push("Welcome") }])
                     } else {
                         Alert.alert('Error', 'Payment Failed', [{ text: 'OK' }])
                     }
